@@ -1,0 +1,145 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model MvcAJAX.Models.Movie
+
+<h1>Create</h1>
+
+<h4>Movie</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form id="create-movie-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" id="title" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReleaseDate" class="control-label"></label>
+                <input asp-for="ReleaseDate" class="form-control" id="release-date" />
+                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Genre" class="control-label"></label>
+                <input asp-for="Genre" class="form-control" id="genre" />
+                <span asp-validation-for="Genre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary mt-2" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<h2 class="mt-3">Movies</h2>
+<hr />
+<div id="movies" class="mt-2 row">
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        window.addEventListener("load", () => {
+            console.log("page loaded!")
+            $.ajax({
+                url: "@Url.Action("GetMovies")",
+                success: (res) => {
+                    console.log(res);
+                    handleSuccess(res);
+                },
+                error: (err) => {
+                    console.log("Error occured");
+                    console.log(err);
+                }
+            })
+        })
+
+        document.querySelector("#create-movie-form").onsubmit = e => {
+            e.preventDefault();
+            const formData = {
+                Title: document.querySelector("#title").value,
+                ReleaseDate: document.querySelector("#release-date").value,
+                Genre: document.querySelector("#genre").value
+            }
+            console.log(formData);
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Create")",
+                data: formData,
+                success: (res) => {
+                    handleAddition(res);
+                    console.log(res);
+                },
+                error: (err) => {
+                    console.log("Error occured");
+                    console.log(err);
+                }
+            })
+        }
+
+        const pad = (num) => {
+            return (num >= 10 ? '' : '0') + num;
+        }
+
+        const handleSuccess = (results) => {
+            document.querySelector("#movies").innerHTML = "";
+
+            results.forEach(res => {
+                const releaseDate = new Date(res.releaseDate);
+                const htmlTemplate = `<dl class="row">
+                                                                                                <dt class = "col-sm-4">
+                                                                                                    Title
+                                                                                                </dt>
+                                                                                                <dd class = "col-sm-6">
+                                                                                                    ${res.title}
+                                                                                                </dd>
+                                                                                                <dt class = "col-sm-4">
+                                                                                                    Release Date
+                                                                                                </dt>
+                                                                                                <dd class = "col-sm-6">
+                                                                                                    ${releaseDate.getDate() + "-" + (pad(releaseDate.getMonth() + 1)) + "-" + releaseDate.getFullYear()}
+                                                                                                </dd>
+                                                                                                <dt class = "col-sm-4">
+                                                                                                    Genre
+                                                                                                </dt>
+                                                                                                <dd class = "col-sm-6">
+                                                                                                    ${res.genre}
+                                                                                                </dd>
+                                                                                            </dl>`
+                $("#movies").append($.parseHTML(htmlTemplate));
+            });
+        }
+        const handleAddition = (res) => {
+            //document.querySelector("#movies").innerHTML = "";
+            const releaseDate = new Date(res.releaseDate);
+            const htmlTemplate = `<dl class="row">
+                                                                                                <dt class = "col-sm-4">
+                                                                                                    Title
+                                                                                                </dt>
+                                                                                                <dd class = "col-sm-6">
+                                                                                                    ${res.title}
+                                                                                                </dd>
+                                                                                                <dt class = "col-sm-4">
+                                                                                                    Release Date
+                                                                                                </dt>
+                                                                                                <dd class = "col-sm-6">
+                                                                                                    ${releaseDate.getDate() + "-" + (pad(releaseDate.getMonth() + 1)) + "-" + releaseDate.getFullYear()}
+                                                                                                </dd>
+                                                                                                <dt class = "col-sm-4">
+                                                                                                    Genre
+                                                                                                </dt>
+                                                                                                <dd class = "col-sm-6">
+                                                                                                    ${res.genre}
+                                                                                                </dd>
+                                                                                            </dl>`
+            $("#movies").append($.parseHTML(htmlTemplate));
+
+        }
+    </script>
+}
